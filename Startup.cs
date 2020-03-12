@@ -12,6 +12,8 @@ using SchoolRegister.Data;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using SchoolRegister.DAL.EF;
+using SchoolRegister.BLL.Entities;
 
 namespace SchoolRegister
 {
@@ -30,8 +32,16 @@ namespace SchoolRegister
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(
                     Configuration.GetConnectionString("DefaultConnection")));
-            services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
-                .AddEntityFrameworkStores<ApplicationDbContext>();
+                services.AddIdentity<User,Role>()
+                .AddRoles<Role>()
+                .AddRoleManager<RoleManager<Role>>()
+                .AddEntityFrameworkStores<ApplicationDbContext>()
+                .AddSignInManager<SignInManager<User>>()
+                .AddDefaultUI()
+                .AddDefaultTokenProviders();
+            services.AddAntiforgery(options => options.HeaderName = "X-XSRF-TOKEN");
+
+            services.AddScoped<UserManager<IdentityUser>, UserManager<IdentityUser>>(); 
             services.AddControllersWithViews();
             services.AddRazorPages();
         }
